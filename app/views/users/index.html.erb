@@ -14,7 +14,9 @@
               <p class="card-text"><%= pluralize(user.articles.count, "article") %></p>
               <div class="container">
                 <%= link_to 'View Profile', user,class:"btn btn-outline-success", method: :get %>
-                <%= link_to 'Edit', edit_user_path(user.id),class:"btn btn-outline-info", method: :get %>
+                <% if logged_in? && user == current_user %>
+                  <%= link_to 'Edit', edit_user_path(user.id),class:"btn btn-outline-info", method: :get %>
+                <% end %>
               </div>
             </div>
             <div class="card-footer text-muted">
