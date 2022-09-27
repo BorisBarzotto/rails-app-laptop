@@ -1,8 +1,8 @@
 class UsersController < ApplicationController
 
-    before_action :set_user, only: [:show, :edit, :update]
-    before_action :require_user, except: [:show, :index]
-    before_action :require_same_user, only: [:edit, :update]
+    before_action :set_user, only: [:show, :edit, :update, :destroy]
+    before_action :require_user, except: [:show, :index, :new, :create]
+    before_action :require_same_user, only: [:edit, :update, :destroy]
 
     def show
       
@@ -25,7 +25,7 @@ class UsersController < ApplicationController
     def update
       
       if @user.update(user_params)
-        flash[:notice] = "User edited"    
+        flash[:success] = "User edited"    
         redirect_to user_path(@user[:id])  
      else
         render 'edit', status: :unprocessable_entity
@@ -37,11 +37,18 @@ class UsersController < ApplicationController
         @user = User.new(user_params)
         if @user.save
           session[:user_id] = @user.id
-          flash[:notice] = "Welcome #{@user.username} "
+          flash[:success] = "Welcome #{@user.username} "
           redirect_to articles_path
         else
           render 'new', status: :unprocessable_entity
         end
+    end
+
+    def destroy
+      @user.destroy
+      session[:user_id] = nil if @user == current_user
+      flash[:success] = "Profile deleted and all associated articles"
+      redirect_to articles_path
     end
 
     private
@@ -55,8 +62,8 @@ class UsersController < ApplicationController
     end  
 
     def require_same_user
-      if current_user != @user
-        flash[:alert] = "You can only edit your profile"
+      if current_user != @user && !current_user.admin?
+        flash[:danger] = "You can only edit or delete your profile"
         redirect_to user_path(@user[:id]) 
       end
     end
